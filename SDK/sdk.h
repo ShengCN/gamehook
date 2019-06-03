@@ -24,6 +24,11 @@
 
 typedef std::vector<uint8_t> ByteCode;
 
+struct ShaderHash;
+IMPORT std::ostream& operator<<(std::ostream& o, const ShaderHash& h);
+IMPORT std::istream& operator>>(std::istream& o, ShaderHash& h);
+
+// #shader_hash
 struct ShaderHash {
 	uint32_t h[4] = { 0 };
 	bool operator==(const ShaderHash & o) const {
@@ -64,8 +69,6 @@ namespace std {
 		}
 	};
 }
-IMPORT std::ostream & operator<<(std::ostream & o, const ShaderHash & h);
-IMPORT std::istream & operator>>(std::istream & o, ShaderHash & h);
 
 class Shader {
 public:
@@ -150,13 +153,14 @@ public:
 
 struct Resource {
 	uint32_t id = 0;
+	
 	Resource(uint32_t id = 0) :id(id) {}
 	operator bool() const { return id; }
 	operator uint32_t() const { return id; }
 	Resource & operator=(uint32_t i) { id = i; return *this; }
 };
 struct Texture2D : public Resource { using Resource::Resource; };
-struct RenderTargetView : public Resource { using Resource::Resource; uint16_t W=0, H=0; };
+struct RenderTargetView : public Resource { using Resource::Resource; uint16_t W = 0, H = 0; };
 struct DepthStencilView : public Resource { using Resource::Resource; uint16_t W = 0, H = 0; };
 struct Buffer : public Resource { using Resource::Resource; };
 
@@ -174,6 +178,7 @@ struct GPUMemory {
 	template<typename T> const T * data() const { return static_cast<const T*>(data()); }
 };
 
+// #draw_info
 struct DrawInfo {
 	enum Type {
 		VERTEX,
@@ -485,12 +490,12 @@ public:
 };
 
 // This is the main wrapper class. To use the game wrapper inherit from this class
-// and register your own class using REGISTER_WRAPPER . More than one wrapper may
+// and register your own class using REGISTER_C . More than one wrapper may
 // be registered at any given time.
 class GameController: public BaseGameController {
 protected:
 	BaseGameController * main_;
-	// Contructor
+	// Constructor
 	template<typename T> friend struct TGameControllerFactory;
 public:
 	virtual void sendKeyDown(unsigned char key, bool syskey = false) final { return main_->sendKeyDown(key, syskey); }

@@ -36,6 +36,7 @@ std::ostream & operator<<(std::ostream & o, const Shader::Buffer & h) {
 	return o << h.name << "(" << h.bind_point << ")" << h.variables;
 }
 
+// #create_shader
 std::shared_ptr<Shader> Shader::create(const ByteCode & src, const std::unordered_map<std::string, std::string> & name_remap) {
 	HLSL s(src);
 	if (s.type() == HLSL::PIXEL_SHADER)
@@ -47,6 +48,8 @@ std::shared_ptr<Shader> Shader::create(const ByteCode & src, const std::unordere
 	LOG(WARN) << "Unsupported shader type";
 	return nullptr;
 }
+
+// #merge_shader
 std::shared_ptr<Shader> Shader::merge(std::shared_ptr<Shader> a, std::shared_ptr<Shader> b) {
 	HLSL ha(ByteCode(a->data(), a->data() + a->size())), hb(ByteCode(b->data(), b->data() + b->size())), hr;
 	
@@ -120,13 +123,14 @@ Shader::Binding C(const HLSL::Binding & b, const std::unordered_map<std::string,
 	return { b.name, b.bind_point };
 }
 
+// #init_shader_variables
 ShaderImp::ShaderImp(const ByteCode & code, const std::unordered_map<std::string, std::string> & name_remap) :code_(code), name_remap_(name_remap){
 	HLSL hlsl(code);
 	inputs_ = C<Shader::Binding>(hlsl.listInput(), name_remap);
 	outputs_ = C<Shader::Binding>(hlsl.listOutput(), name_remap);
 	cbuffers_ = C<Shader::Buffer>(hlsl.listCBuffers());
 	sbuffers_ = C<Shader::Buffer>(hlsl.listSBuffers());
-	textures_ = C<Shader::Binding>(hlsl.listTextures());
+	textures_ = C<Shader::Binding>(hlsl.listTextures());			// #init_shader_textures
 	memcpy(hash_.h, code_.data() + sizeof(uint32_t), sizeof(hash_.h));
 }
 

@@ -731,6 +731,7 @@ struct Chunk {
 	uint32_t size;
 };
 
+// #parse_hlsl
 void HLSL::parse(const ByteCode & code) {
 	const DXBCHeader * header = (const DXBCHeader*)&code[0];
 	for (uint32_t i = 0; i < header->total_chunk; i++) {
@@ -739,6 +740,8 @@ void HLSL::parse(const ByteCode & code) {
 		chunks_.push_back(std::make_pair(chunk->name, ByteCode(code.begin()+o+sizeof(Chunk), code.begin()+o+sizeof(Chunk)+chunk->size)));
 	}
 }
+
+// #write_hlsl
 HLSL::ByteCode HLSL::write() const {
 	ByteCode r(sizeof(DXBCHeader) + chunks_.size() * sizeof(uint32_t));
 
@@ -772,6 +775,7 @@ HLSL::ByteCode HLSL::write() const {
 
 	return r;
 }
+
 bool HLSL::empty() const {
 	// Is the HLSL shader body empty?
 	for (const auto & c : chunks_) {
@@ -795,6 +799,8 @@ bool HLSL::usesDiscard() const {
 		}
 	return false;
 }
+
+// #write_depth
 bool HLSL::writesDepth() const {
 	for (auto & c : chunks_)
 		if (c.first == OSGNName) {
@@ -893,6 +899,8 @@ std::vector<HLSL::Buffer> HLSL::listCBuffers() const {
 std::vector<HLSL::Buffer> HLSL::listSBuffers() const {
 	return listBuffers(0x32 /* tbuffer=1  RWTexture=4  structured=5*/);
 }
+
+// #hlsl_list_texture
 std::vector<HLSL::Binding> HLSL::listTextures() const {
 	std::vector<Binding> r;
 	for (const auto & ck : chunks_)

@@ -5,7 +5,7 @@
 static HRESULT NotImpl() {
 	return E_NOTIMPL;
 }
-static constexpr FARPROC not_impl = (FARPROC)*NotImpl;
+//static constexpr FARPROC not_impl = (FARPROC)*NotImpl;
 
 #define VISIT_DXGI(F) \
 F(ApplyCompatResolutionQuirking) \
@@ -66,12 +66,12 @@ F(D3DKMTWaitForVerticalBlankEvent)
 
 struct DXGI {
 	HMODULE dll = nullptr;
-#define DCL(x) FARPROC x = not_impl;
+#define DCL(x) FARPROC x = (FARPROC)*NotImpl;
 	VISIT_DXGI(DCL);
 #undef DCL
 	static FARPROC Get(HMODULE dll, const char * n) {
 		FARPROC r = GetProcAddress(dll, n);
-		if (!n) return not_impl;
+		if (!n) return (FARPROC)* NotImpl;
 		return r;
 	}
 	void load(const char *path) {

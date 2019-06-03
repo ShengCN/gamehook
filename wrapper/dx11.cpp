@@ -98,6 +98,7 @@ template<typename T, typename O> struct IndexHandler {
 	}
 };
 
+// #hook_pipeline
 struct GameHook : public D3D11Hook, public IOHookHigh, public MainGameController {
 	Timer timer[4];
 	bool reload_dlls = false;
@@ -105,6 +106,7 @@ struct GameHook : public D3D11Hook, public IOHookHigh, public MainGameController
 		startControllers();
 	}
 
+	// #init_controller
 	virtual void initController(std::shared_ptr<GameController> c) override {
 		// Fetch all valid render targets
 		const auto & targets = providedTargets(c);
@@ -125,8 +127,13 @@ struct GameHook : public D3D11Hook, public IOHookHigh, public MainGameController
 					visible_targets_[t.name] = targets_[t.name];
 			}
 	}
+	
+	// #initialize_shader_inejction
 	virtual void startControllers() override {
+
+		// #factory_create_controllers
 		MainGameController::startControllers();
+		
 		for (auto & i : vertex_shader_)
 			inject(i.second);
 		for (auto & i : pixel_shader_)
@@ -142,6 +149,7 @@ struct GameHook : public D3D11Hook, public IOHookHigh, public MainGameController
 	std::unordered_map<std::string, std::shared_ptr<BaseRenderTarget> > targets_, visible_targets_;
 	std::unordered_map<std::string, std::shared_ptr<RWTextureTarget> > custom_render_targets_;
 
+	// #main_hook_work_flow
 	virtual HRESULT Present(unsigned int SyncInterval, unsigned int Flags) override {
 		TIC;
 		// Get width and height of the window
@@ -204,7 +212,7 @@ struct GameHook : public D3D11Hook, public IOHookHigh, public MainGameController
 				}
 			}
 
-			// Setup all the custon render targets
+			// Setup all the custom render targets
 			for (const auto & t : custom_render_targets_) {
 				t.second->setup(width, height);
 				UINT v[4] = { 0 };
@@ -347,7 +355,7 @@ struct GameHook : public D3D11Hook, public IOHookHigh, public MainGameController
 		return r;
 	}
 
-	// Post processing
+	// #Post_processing
 	struct PostFXShader {
 		ID3D11PixelShader* shader = nullptr;
 		RegInfo output, inputs;
@@ -435,7 +443,7 @@ struct GameHook : public D3D11Hook, public IOHookHigh, public MainGameController
 	// Forward all the IO callbacks
 	virtual bool keyDown(unsigned char key, unsigned char special_status) {
 		// Reload keyboard shortcut (CTLR + F10)
-		if (key == VK_F10 && (special_status & 7) == CTRL)
+		if (key == VK_F10)
 			reload_dlls = true;
 		return MainGameController::keyDown(key, special_status);
 	}
@@ -714,11 +722,11 @@ struct GameHook : public D3D11Hook, public IOHookHigh, public MainGameController
 		D3D11Hook::DrawAuto();
 	}
 	virtual void DrawIndexedInstancedIndirect(ID3D11Buffer *pBufferForArgs, UINT AlignedByteOffsetForArgs) {
-		LOG(INFO) << "Not hooking DrawIndexedInstancedIndirect";
+		// LOG(INFO) << "Not hooking DrawIndexedInstancedIndirect";
 		D3D11Hook::DrawIndexedInstancedIndirect(pBufferForArgs, AlignedByteOffsetForArgs);
 	}
 	virtual void DrawInstancedIndirect(ID3D11Buffer *pBufferForArgs, UINT AlignedByteOffsetForArgs) {
-		LOG(INFO) << "Not hooking DrawInstancedIndirect";
+		// LOG(INFO) << "Not hooking DrawInstancedIndirect";
 		D3D11Hook::DrawIndexedInstancedIndirect(pBufferForArgs, AlignedByteOffsetForArgs);
 	}
 

@@ -324,6 +324,7 @@ void BaseRenderTarget::copyFrom(ID3D11RenderTargetView * view) {
 	copyFrom((ID3D11View*)view, desc.Format);
 }
 
+// #write_output_2_texture2d
 void BaseRenderTarget::copyOutputFrom(ID3D11ShaderResourceView * view, DXGI_FORMAT format) {
 	if (canMip(format))
 		h_->D3D11Hook::GenerateMips(view);
@@ -374,6 +375,7 @@ void BaseRenderTarget::copyFrom(const BaseRenderTarget & rt) {
 	copyFrom(rt.tex());
 }
 
+// #copy_texture_back
 void RenderTarget::copyFrom(ID3D11Texture2D * tex, DXGI_FORMAT hint) {
 	D3D11_TEXTURE2D_DESC t_desc = { 0 };
 	tex->GetDesc(&t_desc);

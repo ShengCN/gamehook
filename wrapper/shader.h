@@ -25,7 +25,7 @@ public:
 	virtual const std::vector<Binding> & outputs() const override { return outputs_; }
 	virtual const std::vector<Buffer> & cbuffers() const override { return cbuffers_; }
 	virtual const std::vector<Buffer> & sbuffers() const override { return sbuffers_; }
-	virtual const std::vector<Binding> & textures() const override { return textures_; }
+	virtual const std::vector<Binding> & textures() const override { return textures_; }	// #shader_texture
 	virtual const ShaderHash & hash() const override { return hash_; }
 
 	virtual const uint8_t * data() const { return code_.data(); }

@@ -184,7 +184,7 @@ void unloadAPI(bool unload_hk, bool unload_asi) {
 		for (auto m : asi_modules) {
 			CHAR fn[256];
 			GetModuleFileName(m, fn, 256);
-			LOG(INFO) << "Unloading plugin " << fn;
+			LOG(INFO) << "Unloading asi " << fn;
 			FreeLibrary(m);
 			DeleteFile(fn);
 		}

@@ -166,6 +166,7 @@ bool D3DBuffer::resize(size_t s) {
 	return false;
 }
 
+// #copy_from_gpu_buffer_to_cpu_buffer
 size_t D3DBuffer::read(void * data, size_t n) {
 	if (!buf_) return 0;
 	if (n > desc_.ByteWidth) n = desc_.ByteWidth;

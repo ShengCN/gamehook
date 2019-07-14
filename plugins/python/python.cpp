@@ -299,26 +299,26 @@ struct PythonController : public GameController {
 	virtual void command(const std::string & json) {
 		callAll("command", json);
 	}
-	virtual std::string gameState() const {
-		py::gil_scoped_acquire acquire;
-		std::string r = "{";
-		for (auto c : controllers)
-			if (py::hasattr(c, "game_state")) {
-				py::object gs = c.attr("game_state");
-				if (!gs.is_none()) {
-					if (r.size() > 1) r += ",";
-					std::string rr;
-					{
-						rr = (std::string)py::str(gs());
-					}
-					if (rr.size() && rr[0] == '{' && rr[rr.size() - 1] == '}')
-						rr = rr.substr(1, rr.size() - 2);
-					if (rr.size())
-						r += rr;
-				}
-			}
-		return r + "}";
-	}
+	//virtual std::string gameState() const {
+	//	py::gil_scoped_acquire acquire;
+	//	std::string r = "{";
+	//	for (auto c : controllers)
+	//		if (py::hasattr(c, "game_state")) {
+	//			py::object gs = c.attr("game_state");
+	//			if (!gs.is_none()) {
+	//				if (r.size() > 1) r += ",";
+	//				std::string rr;
+	//				{
+	//					rr = (std::string)py::str(gs());
+	//				}
+	//				if (rr.size() && rr[0] == '{' && rr[rr.size() - 1] == '}')
+	//					rr = rr.substr(1, rr.size() - 2);
+	//				if (rr.size())
+	//					r += rr;
+	//			}
+	//		}
+	//	return r + "}";
+	//}
 };
 
 REGISTER_CONTROLLER(PythonController);

@@ -443,7 +443,7 @@ struct GameHook : public D3D11Hook, public IOHookHigh, public MainGameController
 	// Forward all the IO callbacks
 	virtual bool keyDown(unsigned char key, unsigned char special_status) {
 		// Reload keyboard shortcut (CTLR + F10)
-		if (key == VK_F10)
+		if (key == VK_F10 && (special_status & 7) == CTRL)
 			reload_dlls = true;
 		return MainGameController::keyDown(key, special_status);
 	}
@@ -755,6 +755,7 @@ struct GameHook : public D3D11Hook, public IOHookHigh, public MainGameController
 		i->second->copyFrom(t);
 		TOC;
 	}
+	
 	virtual bool hasTarget(const std::string & name) const {
 		return visible_targets_.count(name);
 	}

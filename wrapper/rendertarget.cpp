@@ -41,6 +41,7 @@ DXGI_FORMAT uavFormat(DXGI_FORMAT format) {
 	case DXGI_FORMAT_R32G32_FLOAT: return DXGI_FORMAT_R32G32_FLOAT;
 	case DXGI_FORMAT_D32_FLOAT: return DXGI_FORMAT_R32_FLOAT;
 	case DXGI_FORMAT_R32_FLOAT: return DXGI_FORMAT_R32_FLOAT;
+	case DXGI_FORMAT_D32_FLOAT_S8X24_UINT: return DXGI_FORMAT_D32_FLOAT_S8X24_UINT;
 
 	case DXGI_FORMAT_R16G16B16A16_FLOAT: return DXGI_FORMAT_R16G16B16A16_FLOAT;
 	case DXGI_FORMAT_R16G16_FLOAT: return DXGI_FORMAT_R16G16_FLOAT;
@@ -383,13 +384,16 @@ void RenderTarget::copyFrom(ID3D11Texture2D * tex, DXGI_FORMAT hint) {
 		t_desc.Format = hint;
 
 	bool use_mip = canMip(t_desc.Format);
+
 	if (tex_.setup(t_desc.Width, t_desc.Height, t_desc.Format, use_mip ? 5 : 1, D3D11_USAGE_DEFAULT, D3D11_BIND_SHADER_RESOURCE | (use_mip ? D3D11_BIND_RENDER_TARGET : 0), 0, use_mip ? D3D11_RESOURCE_MISC_GENERATE_MIPS : 0)) {
 		if (view_) view_->Release();
 		HRESULT hr;
+
 		D3D11_SHADER_RESOURCE_VIEW_DESC fmt = { t_desc.Format, D3D11_SRV_DIMENSION_TEXTURE2D };
 		fmt.Texture2D.MipLevels = -1;
 		fmt.Texture2D.MostDetailedMip = 0;
 		hr = h_->D3D11Hook::CreateShaderResourceView(tex_, &fmt, &view_);
+	
 		if (FAILED(hr))
 			LOG(ERR) << "Failed to create copy view. hr = " << std::hex << hr << std::dec;
 	}
@@ -426,6 +430,7 @@ void RWTextureTarget::copyFrom(ID3D11Texture2D * tex, DXGI_FORMAT hint) {
 void RWTextureTarget::setup(int W, int H, DXGI_FORMAT format) {
 	if (format == DXGI_FORMAT_UNKNOWN) format = format_;
 	bool use_mip = canMip(format);
+
 	if (tex_.setup(W, H, format, use_mip ? 5 : 1, D3D11_USAGE_DEFAULT, D3D11_BIND_SHADER_RESOURCE | D3D11_BIND_RENDER_TARGET, 0, use_mip ? D3D11_RESOURCE_MISC_GENERATE_MIPS : 0)) {
 		if (view_) view_->Release();
 		HRESULT hr = h_->D3D11Hook::CreateShaderResourceView(tex_, nullptr, &view_);

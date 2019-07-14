@@ -142,7 +142,7 @@ struct Image {
 			saveBMP(W, H, C, data(), (filename + ".bmp").c_str(), false);
 		} else if (B8G8R8A8_UNORM <= tt && tt <= B8G8R8X8_UNORM_SRGB && tt != R10G10B10_XR_BIAS_A2_UNORM) {
 			saveBMP(W, H, C, data(), (filename + ".bmp").c_str(), true);
-		} else if (dt != UNKNOWN){
+		} else if (dt != UNKNOWN || tt == R8_UNORM){
 			FILE * fp;
 			fopen_s(&fp, (filename + ".raw").c_str(), "wb");
 			const char * format_str[] = { "=u1\0", "=u2\0", "=u4\0", "=f4\0", "=f2\0" };
@@ -151,7 +151,8 @@ struct Image {
 			fwrite(hdr, sizeof(hdr), 1, fp);
 			fwrite(data_.data(), sizeof(uint8_t), data_.size(), fp);
 			fclose(fp);
-		} else {
+		}
+		else {
 			LOG(WARN) << "Failed to save file '" << filename << "'! Unknown format " << std::hex << tt;
 		}
 	}
@@ -215,6 +216,40 @@ struct Capture: public GameController {
 		key_state[key] = 0;
 		return false;
 	}
+
+	enum KB_Keys
+	{
+		Q = 0x51,
+		E = 0x45,
+		W = 0x57,
+		A = 0x41,
+		S = 0x53,
+		D = 0x44,
+		J = 0x4A,
+		L = 0x4C,
+		I = 0x49,
+		K = 0x4B
+	};
+
+	bool manual_recording = false;
+	bool one_frame = false;
+	virtual	bool keyDown(unsigned char key, unsigned char special_status) {
+		// control if begin 
+		if (key == KB_Keys::J) {
+			manual_recording ^= 1;
+		}
+
+		if (key == KB_Keys::K) {
+			one_frame = true;
+		}
+
+		return false;
+	}
+
+	virtual RecordingType recordFrame(uint32_t frame_id) override {
+		return one_frame || manual_recording ? RecordingType::DRAW : RecordingType::NONE;
+	}
+
 	bool capture = false;
 	virtual void startFrame(uint32_t frame_id) {
 		init();
@@ -223,24 +258,48 @@ struct Capture: public GameController {
 			for (const auto & t : capture_targets)
 				requestOutput(t);
 		}
+		if (one_frame)
+			one_frame = false;
 	}
 	virtual void endFrame(uint32_t frame_id) {
 		std::string frame_name = std::to_string(frame_id);
 		frame_name = std::string(8 - frame_name.size(), '0') + frame_name;
 		if (capture) {
-			for (const auto & t : capture_targets)
+			//for (const auto & t : capture_targets)
+			//	if (!targetAvailable(t))
+			//		capture = false;
+			//if (capture)
+			//	for (const auto & t : capture_targets) {
+			//		TargetType tt = targetType(t);
+			//		DataType tp = outputType(t);
+			//		int C = outputChannels(t), W = defaultWidth(), H = defaultHeight();
+			//		std::shared_ptr<Image> im = std::make_shared<Image>(W, H, C, tp, tt);
+			//		readTarget(t, W, H, C, tp, im->data());
+			//		im->filename = capture_dir + frame_name + "_" + t;
+			//		saveImage(im);
+			//	}
+
+			for (const auto & t : capture_targets) {
 				if (!targetAvailable(t))
-					capture = false;
-			if (capture)
-				for (const auto & t : capture_targets) {
-					TargetType tt = targetType(t);
-					DataType tp = outputType(t);
-					int C = outputChannels(t), W = defaultWidth(), H = defaultHeight();
-					std::shared_ptr<Image> im = std::make_shared<Image>(W, H, C, tp, tt);
-					readTarget(t, W, H, C, tp, im->data());
-					im->filename = capture_dir + frame_name + "_" + t;
-					saveImage(im);
+					continue;
+
+				TargetType tt = targetType(t);
+				DataType tp = outputType(t);
+				int C = outputChannels(t), W = defaultWidth(), H = defaultHeight();
+
+				bool is_ao = tt == R8_UNORM || tt == R8_UINT;
+				if (is_ao)
+				{
+					W /= 2;
+					H /= 2;
 				}
+				
+				std::shared_ptr<Image> im = std::make_shared<Image>(W, H, C, tp, tt);
+				readTarget(t, W, H, C, tp, im->data());
+				im->filename = capture_dir + frame_name + "_" + t;
+				saveImage(im);
+			}
+
 		}
 		std::string gs = getGameState();
 		if (gs.size() > 5) {

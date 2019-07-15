@@ -228,26 +228,22 @@ struct Capture: public GameController {
 		J = 0x4A,
 		L = 0x4C,
 		I = 0x49,
-		K = 0x4B
+		K = 0x4B,
+		F = 0x46
 	};
 
-	bool manual_recording = false;
 	bool one_frame = false;
 	virtual	bool keyDown(unsigned char key, unsigned char special_status) {
-		// control if begin 
-		if (key == KB_Keys::J) {
-			manual_recording ^= 1;
-		}
-
-		if (key == KB_Keys::K) {
+		if (key == KB_Keys::F) {
 			one_frame = true;
+			LOG(INFO) << "Record one frame";
 		}
 
 		return false;
 	}
 
 	virtual RecordingType recordFrame(uint32_t frame_id) override {
-		return one_frame || manual_recording ? RecordingType::DRAW : RecordingType::NONE;
+		return one_frame ? RecordingType::DRAW : RecordingType::NONE;
 	}
 
 	bool capture = false;
@@ -259,7 +255,10 @@ struct Capture: public GameController {
 				requestOutput(t);
 		}
 		if (one_frame)
+		{
 			one_frame = false;
+			LOG(INFO) << "Recording end";
+		}
 	}
 	virtual void endFrame(uint32_t frame_id) {
 		std::string frame_name = std::to_string(frame_id);
